@@ -1,26 +1,19 @@
 name: Publish
 
-permissions:
-  contents: write
-  deployments: write
-  issues: read
-  pull-requests: write
-
 on:
   push:
     branches:
       - 'main'
 
 jobs:
-  test:
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
-      - run: npm ci
-      - run: npm test
+          node-version: '18'
+          cache: 'pnpm'
       - run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
