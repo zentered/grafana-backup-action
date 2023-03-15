@@ -17,9 +17,10 @@
   "license": "MIT",
   "author": "Patrick Heneise <patrick@zentered.co> (https://zentered.co)",
   "type": "module",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "start": "node -r dotenv/config index.js",
+    "build": "ncc build index.js --license licenses.txt",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "release": {
@@ -36,6 +37,7 @@
     "node-fetch": "^3.3.1"
   },
   "devDependencies": {
+    "@vercel/ncc": "^0.36.1",
     "dotenv": "^16.0.3",
     "eslint": "^8.36.0",
     "prettier": "^2.8.4"

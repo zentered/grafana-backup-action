@@ -1,6 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@vercel/ncc': ^0.36.1
   dotenv: ^16.0.3
   eslint: ^8.36.0
   node-fetch: ^3.3.1
@@ -10,6 +11,7 @@ dependencies:
   node-fetch: 3.3.1
 
 devDependencies:
+  '@vercel/ncc': 0.36.1
   dotenv: 16.0.3
   eslint: 8.36.0
   prettier: 2.8.4
@@ -92,6 +94,11 @@ packages:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
+    dev: true
+
+  /@vercel/ncc/0.36.1:
+    resolution: {integrity: sha512-S4cL7Taa9yb5qbv+6wLgiKVZ03Qfkc4jGRuiUQMQ8HGBD5pcNRnHeYM33zBvJE4/zJGjJJ8GScB+WmTsn9mORw==}
+    hasBin: true
     dev: true
 
   /acorn-jsx/5.3.2_acorn@8.8.2:

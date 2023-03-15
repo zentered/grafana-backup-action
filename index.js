@@ -1,6 +1,5 @@
 import { write } from './lib/write.js'
 import { fetchDashboards, fetchDashboard, fetchFolders } from './lib/grafana.js'
-import fetch from 'node-fetch'
 
 const writeFiles = []
 const dashboards = await fetchDashboards()
