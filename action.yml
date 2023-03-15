@@ -1,8 +1,8 @@
 branding:
   color: blue
   icon: bar-chart-2
-description: 'Grafana Backup'
-name: Grafana Backup
+description: 'Run scheduled or triggered backups of your Grafana Cloud instance'
+name: Grafana Backup Action
 runs:
   main: dist/index.js
   using: node16

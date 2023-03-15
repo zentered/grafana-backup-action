@@ -1,5 +1,5 @@
 {
-  "name": "@zentered/grafana-backup",
+  "name": "@zentered/grafana-backup-action",
   "version": "1.0.0",
   "private": false,
   "description": "Fetches Grafana dashboards and saves them to a local directory",
@@ -8,11 +8,11 @@
   ],
   "homepage": "https://zentered.co/",
   "bugs": {
-    "url": "https://github.com/zentered/grafana-backup/issues"
+    "url": "https://github.com/zentered/grafana-backup-action/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zentered/grafana-backup.git"
+    "url": "git+https://github.com/zentered/grafana-backup-action.git"
   },
   "license": "MIT",
   "author": "Patrick Heneise <patrick@zentered.co> (https://zentered.co)",
