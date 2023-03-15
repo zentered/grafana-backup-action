@@ -1,0 +1,8 @@
+branding:
+  color: blue
+  icon: bar-chart-2
+description: 'Grafana Backup'
+name: Grafana Backup
+runs:
+  main: index.js
+  using: node16
