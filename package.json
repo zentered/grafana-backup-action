@@ -1,7 +1,7 @@
 {
   "name": "@zentered/grafana-backup-action",
   "version": "1.0.0",
-  "private": false,
+  "private": true,
   "description": "Fetches Grafana dashboards and saves them to a local directory",
   "keywords": [
     "grafana"
@@ -19,27 +19,22 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "start": "node -r dotenv/config index.js",
+    "start": "node index.js",
+    "dev": "node --env-file .env index.js",
     "build": "ncc build index.js --license licenses.txt",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "release": {
     "branches": [
       "main"
-    ],
-    "plugins": [
-      "@semantic-release/commit-analyzer",
-      "@semantic-release/release-notes-generator",
-      "@semantic-release/github"
     ]
   },
-  "dependencies": {
-    "node-fetch": "^3.3.1"
-  },
   "devDependencies": {
-    "@vercel/ncc": "^0.36.1",
-    "dotenv": "^16.0.3",
-    "eslint": "^8.36.0",
-    "prettier": "^2.8.4"
+    "@vercel/ncc": "^0.38.1",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.1"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
