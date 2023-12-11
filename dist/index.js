@@ -13,7 +13,7 @@ import { createRequire as __WEBPACK_EXTERNAL_createRequire } from "module";
 const grafanaOrg = process.env.GRAFANA_ORG
 const grafanaApiKey = process.env.GRAFANA_CLOUD_API_KEY
 const outputFolder = process.env.OUTPUT_FOLDER
-const overwriteFiles = process.env.OVERWRITE_FILES === 'false'
+const overwriteFiles = process.env.OVERWRITE_FILES === 'true'
 
 
 /***/ }),
