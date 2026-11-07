@@ -5,4 +5,4 @@ description: 'Run scheduled or triggered backups of your Grafana Cloud instance'
 name: Grafana Backup Action
 runs:
   main: dist/index.js
-  using: node20
+  using: node24

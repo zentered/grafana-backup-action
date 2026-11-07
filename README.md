@@ -4,7 +4,7 @@
   <img src=".github/assets/featured-image.jpg">
 </p>
 
-[![Publish](https://github.com/zentered/grafana-backup/actions/workflows/publish.yml/badge.svg)](https://github.com/zentered/grafana-backup/actions/workflows/publish.yml)
+[![Publish](https://github.com/zentered/grafana-backup-action/actions/workflows/publish.yml/badge.svg)](https://github.com/zentered/grafana-backup-action/actions/workflows/publish.yml)
 
 This is a simple GitHub Action to backup Grafana Cloud dashboards.
 
@@ -33,9 +33,9 @@ jobs:
   grafana-backup:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
       - name: Grafana Backup
-        uses: zentered/grafana-backup@v1.0.2
+        uses: zentered/grafana-backup-action@v1.1.1
         env:
           GRAFANA_CLOUD_API_KEY: ${{ secrets.GRAFANA_CLOUD_API_KEY }}
           GRAFANA_ORG: '<your-org>'
@@ -50,7 +50,7 @@ jobs:
 
 Add your API key and the organization name to `.env` (see `.env.example`).
 
-Run `pnpm start` to backup all dashboards to `backup`.
+Run `npm run dev` to backup all dashboards to `backup`.
 
 ## License
 
