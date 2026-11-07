@@ -50,7 +50,7 @@ jobs:
 
 Add your API key and the organization name to `.env` (see `.env.example`).
 
-Run `pnpm start` to backup all dashboards to `backup`.
+Run `npm run dev` to backup all dashboards to `backup`.
 
 ## License
 
