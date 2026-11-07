@@ -1,5 +1,7 @@
 import * as core from '@actions/core'
 
+import { FILENAME_FORMATS } from './lib/names.js'
+
 const DEFAULT_OUTPUT_FOLDER = 'backup'
 
 const firstSet = (...values) => values.find((v) => v !== undefined && v !== '')
@@ -28,6 +30,18 @@ export function loadConfig({ getInput = core.getInput, env = process.env } = {})
       .toString()
       .toLowerCase() === 'true'
 
+  const filenameFormat =
+    firstSet(getInput('filename_format'), env.FILENAME_FORMAT) ?? 'legacy'
+  if (!FILENAME_FORMATS.includes(filenameFormat)) {
+    throw new Error(
+      `Invalid filename_format "${filenameFormat}": use ${FILENAME_FORMATS.join(' or ')}`
+    )
+  }
+  const folderStructure =
+    (firstSet(getInput('folder_structure'), env.FOLDER_STRUCTURE) ?? '')
+      .toString()
+      .toLowerCase() === 'true'
+
   if (!grafanaToken) {
     throw new Error(
       'Missing Grafana token: set the grafana_token input or GRAFANA_CLOUD_API_KEY'
@@ -39,5 +53,13 @@ export function loadConfig({ getInput = core.getInput, env = process.env } = {})
     )
   }
 
-  return { grafanaUrl, grafanaOrg, grafanaToken, outputFolder, overwriteFiles }
+  return {
+    grafanaUrl,
+    grafanaOrg,
+    grafanaToken,
+    outputFolder,
+    overwriteFiles,
+    filenameFormat,
+    folderStructure
+  }
 }

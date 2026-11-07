@@ -17,6 +17,12 @@ inputs:
   overwrite_files:
     description: 'true to overwrite files in output_folder, false to write a date-stamped sub-folder. Falls back to OVERWRITE_FILES'
     required: false
+  filename_format:
+    description: 'Dashboard file names. legacy (default) keeps the names from earlier versions. uid writes <title-slug>-<uid>.json. Colliding names always get the uid appended'
+    required: false
+  folder_structure:
+    description: 'true writes each dashboard into a sub-folder named after its Grafana folder. Default false keeps all files in one folder'
+    required: false
 description: 'Run scheduled or triggered backups of your Grafana Cloud instance'
 name: Grafana Backup Action
 outputs:
