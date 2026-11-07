@@ -33,7 +33,7 @@ jobs:
   grafana-backup:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
       - name: Grafana Backup
         uses: zentered/grafana-backup-action@v1.1.1
         env:
