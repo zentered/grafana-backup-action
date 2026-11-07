@@ -1,6 +1,22 @@
 branding:
   color: blue
   icon: bar-chart-2
+inputs:
+  grafana_url:
+    description: 'Grafana base URL. Defaults to https://<grafana_org>.grafana.net'
+    required: false
+  grafana_org:
+    description: 'Grafana Cloud organization (stack) name, used to build the default URL'
+    required: false
+  grafana_token:
+    description: 'Grafana service account token. Falls back to GRAFANA_CLOUD_API_KEY'
+    required: false
+  output_folder:
+    description: 'Folder to save the backup to. Falls back to OUTPUT_FOLDER, then backup'
+    required: false
+  overwrite_files:
+    description: 'true to overwrite files in output_folder, false to write a date-stamped sub-folder. Falls back to OVERWRITE_FILES'
+    required: false
 description: 'Run scheduled or triggered backups of your Grafana Cloud instance'
 name: Grafana Backup Action
 runs:
