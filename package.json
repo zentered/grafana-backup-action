@@ -22,7 +22,7 @@
     "start": "node index.js",
     "dev": "node --env-file .env index.js",
     "build": "ncc build index.js --license licenses.txt",
-    "test": "node --test test/",
+    "test": "node --test",
     "lint": "eslint ."
   },
   "release": {
