@@ -12,7 +12,11 @@ async function run() {
     const writer = createWriter(config)
     const result = await runBackup({
       grafana: createGrafana(config),
-      writer
+      writer,
+      options: {
+        filenameFormat: config.filenameFormat,
+        folderStructure: config.folderStructure
+      }
     })
 
     core.info(
