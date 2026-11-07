@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Grafana Backup
-        uses: zentered/grafana-backup@v1.0.2
+        uses: zentered/grafana-backup-action@v1.1.1
         env:
           GRAFANA_CLOUD_API_KEY: ${{ secrets.GRAFANA_CLOUD_API_KEY }}
           GRAFANA_ORG: '<your-org>'
