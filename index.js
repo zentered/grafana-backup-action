@@ -1,16 +1,34 @@
-import { write } from './lib/write.js'
-import { fetchDashboards, fetchDashboard, fetchFolders } from './lib/grafana.js'
+import * as core from '@actions/core'
+import { loadConfig } from './config.js'
+import { createWriter } from './lib/write.js'
+import { createGrafana } from './lib/grafana.js'
 
-const writeFiles = []
-const dashboards = await fetchDashboards()
-const folders = await fetchFolders()
+async function run() {
+  try {
+    const config = loadConfig()
+    core.setSecret(config.grafanaToken)
 
-writeFiles.push(write('folders.json', folders))
-writeFiles.push(write('dashboards.json', dashboards))
+    const { fetchDashboards, fetchDashboard, fetchFolders } =
+      createGrafana(config)
+    const { write, backupDir } = createWriter(config)
 
-for (const d of dashboards) {
-  const db = await fetchDashboard(d.uid)
-  writeFiles.push(write(`${d.uri.replace('db/', '')}.json`, db))
+    const writeFiles = []
+    const dashboards = await fetchDashboards()
+    const folders = await fetchFolders()
+
+    writeFiles.push(write('folders.json', folders))
+    writeFiles.push(write('dashboards.json', dashboards))
+
+    for (const d of dashboards) {
+      const db = await fetchDashboard(d.uid)
+      writeFiles.push(write(`${d.uri.replace('db/', '')}.json`, db))
+    }
+
+    await Promise.all(writeFiles)
+    core.setOutput('backup_path', backupDir)
+  } catch (error) {
+    core.setFailed(error.message)
+  }
 }
 
-await Promise.all(writeFiles)
+run()
