@@ -79,3 +79,27 @@ test('missing token throws', () => {
 test('missing url and org throws', () => {
   assert.throws(() => load({ inputs: { grafana_token: 'tok' } }), /URL/)
 })
+
+test('filename_format defaults to legacy and rejects unknown values', () => {
+  assert.equal(load({ inputs: base }).filenameFormat, 'legacy')
+  assert.equal(
+    load({ inputs: { ...base, filename_format: 'uid' } }).filenameFormat,
+    'uid'
+  )
+  assert.throws(
+    () => load({ inputs: { ...base, filename_format: 'nope' } }),
+    /filename_format/
+  )
+})
+
+test('folder_structure is off unless set to true', () => {
+  assert.equal(load({ inputs: base }).folderStructure, false)
+  assert.equal(
+    load({ inputs: { ...base, folder_structure: 'true' } }).folderStructure,
+    true
+  )
+  assert.equal(
+    load({ inputs: base, env: { FOLDER_STRUCTURE: 'true' } }).folderStructure,
+    true
+  )
+})

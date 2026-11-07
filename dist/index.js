@@ -31466,7 +31466,7 @@ function notice(message, properties = {}) {
  * @param message info message
  */
 function info(message) {
-    process.stdout.write(message + os.EOL);
+    process.stdout.write(message + external_os_namespaceObject.EOL);
 }
 /**
  * Begin an output group.
@@ -31553,7 +31553,106 @@ function getIDToken(aud) {
  */
 
 //# sourceMappingURL=core.js.map
+;// CONCATENATED MODULE: ./lib/names.js
+
+
+const FILENAME_FORMATS = ['legacy', 'uid']
+
+// Files the backup writes next to the dashboards.
+const RESERVED = new Set(['folders', 'dashboards'])
+
+const slugify = (value, fallback = 'untitled') => {
+  const slug = String(value ?? '')
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return slug || fallback
+}
+
+// Keep a server-provided string safe as one path segment.
+const safeSegment = (value) =>
+  String(value)
+    .replace(/[^A-Za-z0-9._-]+/g, '-')
+    .replace(/^[.-]+/, '')
+    .replace(/-+$/, '')
+
+const baseName = (d, filenameFormat) => {
+  if (filenameFormat === 'uid') {
+    return `${slugify(d.title, 'dashboard')}-${safeSegment(d.uid)}`
+  }
+  // The search field `uri` ("db/<slug>") is deprecated, but it is what earlier
+  // versions used. Keep it so existing backups do not get renamed.
+  const fromUri =
+    typeof d.uri === 'string' ? safeSegment(d.uri.replace(/^db\//, '')) : ''
+  return fromUri || slugify(d.title, 'dashboard')
+}
+
+const folderDirs = (dashboards) => {
+  const byUid = new Map()
+  for (const d of dashboards) {
+    if (d.folderUid) byUid.set(d.folderUid, slugify(d.folderTitle, 'folder'))
+  }
+  const counts = new Map()
+  for (const slug of byUid.values()) {
+    const key = slug.toLowerCase()
+    counts.set(key, (counts.get(key) ?? 0) + 1)
+  }
+  const dirs = new Map()
+  for (const [uid, slug] of byUid) {
+    dirs.set(
+      uid,
+      counts.get(slug.toLowerCase()) > 1 ? `${slug}-${safeSegment(uid)}` : slug
+    )
+  }
+  return dirs
+}
+
+/**
+ * Map each dashboard to a unique relative file path.
+ *
+ * Dashboards whose names collide (same title in two folders, a title equal to
+ * a file the backup writes itself, names that differ only by case) all get
+ * their uid appended. No collision, no change: names stay stable between runs.
+ */
+const planFiles = (
+  dashboards,
+  { filenameFormat = 'legacy', folderStructure = false } = {}
+) => {
+  const dirs = folderStructure ? folderDirs(dashboards) : new Map()
+  const entries = dashboards.map((dashboard) => ({
+    dashboard,
+    dir: dirs.get(dashboard.folderUid) ?? '',
+    base: baseName(dashboard, filenameFormat)
+  }))
+
+  const key = ({ dir, base }) => `${dir}/${base}`.toLowerCase()
+  const counts = new Map()
+  for (const e of entries) counts.set(key(e), (counts.get(key(e)) ?? 0) + 1)
+
+  const used = new Set()
+  return entries.map((e) => {
+    const reserved = e.dir === '' && RESERVED.has(e.base.toLowerCase())
+    let base =
+      counts.get(key(e)) > 1 || reserved
+        ? `${e.base}-${safeSegment(e.dashboard.uid)}`
+        : e.base
+    // Last resort when even the uid-suffixed name is taken.
+    for (let n = 2; used.has(`${e.dir}/${base}`.toLowerCase()); n++) {
+      base = `${e.base}-${safeSegment(e.dashboard.uid)}-${n}`
+    }
+    used.add(`${e.dir}/${base}`.toLowerCase())
+    return {
+      dashboard: e.dashboard,
+      path: e.dir ? `${e.dir}/${base}.json` : `${base}.json`
+    }
+  })
+}
+
 ;// CONCATENATED MODULE: ./config.js
+
+
 
 
 const DEFAULT_OUTPUT_FOLDER = 'backup'
@@ -31584,6 +31683,18 @@ function loadConfig({ getInput = core_getInput, env = process.env } = {}) {
       .toString()
       .toLowerCase() === 'true'
 
+  const filenameFormat =
+    firstSet(getInput('filename_format'), env.FILENAME_FORMAT) ?? 'legacy'
+  if (!FILENAME_FORMATS.includes(filenameFormat)) {
+    throw new Error(
+      `Invalid filename_format "${filenameFormat}": use ${FILENAME_FORMATS.join(' or ')}`
+    )
+  }
+  const folderStructure =
+    (firstSet(getInput('folder_structure'), env.FOLDER_STRUCTURE) ?? '')
+      .toString()
+      .toLowerCase() === 'true'
+
   if (!grafanaToken) {
     throw new Error(
       'Missing Grafana token: set the grafana_token input or GRAFANA_CLOUD_API_KEY'
@@ -31595,7 +31706,15 @@ function loadConfig({ getInput = core_getInput, env = process.env } = {}) {
     )
   }
 
-  return { grafanaUrl, grafanaOrg, grafanaToken, outputFolder, overwriteFiles }
+  return {
+    grafanaUrl,
+    grafanaOrg,
+    grafanaToken,
+    outputFolder,
+    overwriteFiles,
+    filenameFormat,
+    folderStructure
+  }
 }
 
 ;// CONCATENATED MODULE: external "node:fs/promises"
@@ -31608,22 +31727,26 @@ const external_node_path_namespaceObject = __WEBPACK_EXTERNAL_createRequire(impo
 ;
 
 
-const createWriter = ({ outputFolder, overwriteFiles }) => {
-  const datePrefix = new Date().toISOString().split('T')[0]
+const createWriter = ({
+  outputFolder,
+  overwriteFiles,
+  cwd = process.cwd(),
+  now = new Date()
+}) => {
+  const datePrefix = now.toISOString().split('T')[0]
   const backupDir = (0,external_node_path_namespaceObject.resolve)(
     overwriteFiles
-      ? (0,external_node_path_namespaceObject.join)(process.cwd(), outputFolder)
-      : (0,external_node_path_namespaceObject.join)(process.cwd(), outputFolder, datePrefix)
+      ? (0,external_node_path_namespaceObject.join)(cwd, outputFolder)
+      : (0,external_node_path_namespaceObject.join)(cwd, outputFolder, datePrefix)
   )
 
-  let ensureDir
   const write = async (filename, data) => {
+    const file = (0,external_node_path_namespaceObject.resolve)(backupDir, filename)
+    if (!file.startsWith(backupDir + external_node_path_namespaceObject.sep)) {
+      throw new Error(`Refusing to write outside the backup folder: ${filename}`)
+    }
     console.log(`writing: ${filename}`)
-
-    ensureDir ??= (0,promises_namespaceObject.mkdir)(backupDir, { recursive: true })
-    await ensureDir
-
-    const file = (0,external_node_path_namespaceObject.join)(backupDir, filename)
+    await (0,promises_namespaceObject.mkdir)((0,external_node_path_namespaceObject.dirname)(file), { recursive: true })
     await (0,promises_namespaceObject.writeFile)(file, JSON.stringify(data, null, 2))
   }
 
@@ -31633,35 +31756,111 @@ const createWriter = ({ outputFolder, overwriteFiles }) => {
 ;// CONCATENATED MODULE: ./lib/grafana.js
 
 
-const createGrafana = ({ grafanaUrl, grafanaToken }) => {
-  const fetchGrafana = async (query) => {
-    try {
-      const res = await fetch(`${grafanaUrl}/api/${query}`, {
-        headers: {
-          Authorization: `Bearer ${grafanaToken}`
-        }
-      })
+const MAX_PAGE_SIZE = 5000
+const MAX_ATTEMPTS = 4
+const BASE_DELAY_MS = 500
+const MAX_DELAY_MS = 60_000
 
-      if (!res || !res.ok) {
-        console.error(`Error: ${res.status} ${res.statusText}`)
-        throw new Error('Grafana API error')
+const defaultSleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const isRetryable = (status) => status === 429 || status >= 500
+
+// Retry-After is either delay-seconds or an HTTP date.
+const retryDelay = (res, attempt) => {
+  const header = res?.headers?.get?.('retry-after')
+  if (header) {
+    const seconds = Number(header)
+    const ms = Number.isFinite(seconds)
+      ? seconds * 1000
+      : Date.parse(header) - Date.now()
+    if (Number.isFinite(ms)) return Math.min(Math.max(ms, 0), MAX_DELAY_MS)
+  }
+  return Math.min(BASE_DELAY_MS * 2 ** attempt, MAX_DELAY_MS)
+}
+
+const createGrafana = ({
+  grafanaUrl,
+  grafanaToken,
+  fetch: fetchFn = globalThis.fetch,
+  sleep = defaultSleep,
+  pageSize = MAX_PAGE_SIZE
+}) => {
+  // The error message names the endpoint and status. It never contains the
+  // token: the token only appears in the Authorization header.
+  const fetchGrafana = async (path) => {
+    const url = `${grafanaUrl}/api/${path}`
+    for (let attempt = 0; ; attempt++) {
+      let res
+      try {
+        res = await fetchFn(url, {
+          headers: { Authorization: `Bearer ${grafanaToken}` }
+        })
+      } catch (err) {
+        const detail = err.cause?.code ?? err.cause?.message ?? err.message
+        throw new Error(`Grafana API error: GET /api/${path} failed (${detail})`, {
+          cause: err
+        })
       }
 
-      return res.json()
-    } catch (err) {
-      console.error(err)
-      throw new Error('Grafana API error', { cause: err })
+      if (res.ok) return res.json()
+
+      if (isRetryable(res.status) && attempt < MAX_ATTEMPTS - 1) {
+        const delay = retryDelay(res, attempt)
+        console.error(
+          `GET /api/${path} returned ${res.status}, retrying in ${delay} ms`
+        )
+        await sleep(delay)
+        continue
+      }
+
+      const body = (await res.text().catch(() => '')).slice(0, 200)
+      throw new Error(
+        `Grafana API error: GET /api/${path} returned ${res.status} ${res.statusText}${body ? `: ${body}` : ''}`
+      )
+    }
+  }
+
+  // /api/search returns at most `limit` hits per page; `page` starts at 1.
+  const fetchAll = async (type) => {
+    const all = []
+    for (let page = 1; ; page++) {
+      const hits = await fetchGrafana(
+        `search?type=${type}&limit=${pageSize}&page=${page}`
+      )
+      all.push(...hits)
+      if (hits.length < pageSize) return all
     }
   }
 
   return {
-    fetchFolders: () => fetchGrafana('search?type=dash-folder&limit=1000'),
-    fetchDashboards: () => fetchGrafana('search?type=dash-db&limit=1000'),
-    fetchDashboard: (uid) => fetchGrafana(`dashboards/uid/${uid}`)
+    fetchFolders: () => fetchAll('dash-folder'),
+    fetchDashboards: () => fetchAll('dash-db'),
+    fetchDashboard: (uid) => fetchGrafana(`dashboards/uid/${encodeURIComponent(uid)}`)
   }
 }
 
+;// CONCATENATED MODULE: ./lib/backup.js
+
+
+;
+
+const runBackup = async ({ grafana, writer, options = {} }) => {
+  const dashboards = await grafana.fetchDashboards()
+  const folders = await grafana.fetchFolders()
+
+  await writer.write('folders.json', folders)
+  await writer.write('dashboards.json', dashboards)
+
+  for (const { dashboard, path } of planFiles(dashboards, options)) {
+    const db = await grafana.fetchDashboard(dashboard.uid)
+    await writer.write(path, db)
+  }
+
+  return { dashboards: dashboards.length, folders: folders.length }
+}
+
 ;// CONCATENATED MODULE: ./index.js
+
 
 
 
@@ -31672,24 +31871,20 @@ async function run() {
     const config = loadConfig()
     core_setSecret(config.grafanaToken)
 
-    const { fetchDashboards, fetchDashboard, fetchFolders } =
-      createGrafana(config)
-    const { write, backupDir } = createWriter(config)
+    const writer = createWriter(config)
+    const result = await runBackup({
+      grafana: createGrafana(config),
+      writer,
+      options: {
+        filenameFormat: config.filenameFormat,
+        folderStructure: config.folderStructure
+      }
+    })
 
-    const writeFiles = []
-    const dashboards = await fetchDashboards()
-    const folders = await fetchFolders()
-
-    writeFiles.push(write('folders.json', folders))
-    writeFiles.push(write('dashboards.json', dashboards))
-
-    for (const d of dashboards) {
-      const db = await fetchDashboard(d.uid)
-      writeFiles.push(write(`${d.uri.replace('db/', '')}.json`, db))
-    }
-
-    await Promise.all(writeFiles)
-    setOutput('backup_path', backupDir)
+    info(
+      `Backed up ${result.dashboards} dashboards and ${result.folders} folders to ${writer.backupDir}`
+    )
+    setOutput('backup_path', writer.backupDir)
   } catch (error) {
     setFailed(error.message)
   }
