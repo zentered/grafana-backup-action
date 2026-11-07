@@ -4,7 +4,7 @@
   <img src=".github/assets/featured-image.jpg">
 </p>
 
-[![Publish](https://github.com/zentered/grafana-backup/actions/workflows/publish.yml/badge.svg)](https://github.com/zentered/grafana-backup/actions/workflows/publish.yml)
+[![Publish](https://github.com/zentered/grafana-backup-action/actions/workflows/publish.yml/badge.svg)](https://github.com/zentered/grafana-backup-action/actions/workflows/publish.yml)
 
 This is a simple GitHub Action to backup Grafana Cloud dashboards.
 
