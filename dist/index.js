@@ -12,7 +12,7 @@ import { createRequire as __WEBPACK_EXTERNAL_createRequire } from "module";
 /* harmony export */ });
 const grafanaOrg = process.env.GRAFANA_ORG
 const grafanaApiKey = process.env.GRAFANA_CLOUD_API_KEY
-const outputFolder = process.env.OUTPUT_FOLDER
+const outputFolder = process.env.OUTPUT_FOLDER ?? 'backup'
 const overwriteFiles = process.env.OVERWRITE_FILES === 'true'
 
 
@@ -75,7 +75,7 @@ const fetchGrafana = async (query) => {
     return res.json()
   } catch (err) {
     console.error(err)
-    throw new Error('Grafana API error')
+    throw new Error('Grafana API error', { cause: err })
   }
 }
 
