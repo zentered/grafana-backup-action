@@ -19,6 +19,9 @@ inputs:
     required: false
 description: 'Run scheduled or triggered backups of your Grafana Cloud instance'
 name: Grafana Backup Action
+outputs:
+  backup_path:
+    description: 'Absolute path of the folder the backup was written to'
 runs:
   main: dist/index.js
   using: node24

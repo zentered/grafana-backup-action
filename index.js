@@ -6,10 +6,11 @@ import { createGrafana } from './lib/grafana.js'
 async function run() {
   try {
     const config = loadConfig()
+    core.setSecret(config.grafanaToken)
 
     const { fetchDashboards, fetchDashboard, fetchFolders } =
       createGrafana(config)
-    const { write } = createWriter(config)
+    const { write, backupDir } = createWriter(config)
 
     const writeFiles = []
     const dashboards = await fetchDashboards()
@@ -24,6 +25,7 @@ async function run() {
     }
 
     await Promise.all(writeFiles)
+    core.setOutput('backup_path', backupDir)
   } catch (error) {
     core.setFailed(error.message)
   }
