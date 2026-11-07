@@ -18,3 +18,12 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      - name: Check dist is up to date
+        run: |
+          npm run build
+          if [ -n "$(git status --porcelain dist)" ]; then
+            echo "dist/ is stale. Run 'npm run build' and commit the result."
+            git status --porcelain dist
+            git diff --stat dist
+            exit 1
+          fi
