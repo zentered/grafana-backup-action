@@ -35,7 +35,7 @@
     "@vercel/ncc": "^0.45.0",
     "eslint": "^10.15.0",
     "globals": "^17.14.0",
-    "prettier": "^3.9.10"
+    "prettier": "^3.10.1"
   },
   "engines": {
     "node": ">=20"
